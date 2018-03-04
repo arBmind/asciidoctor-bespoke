@@ -1,15 +1,41 @@
 - _has_title = title?
-- content_for :pre
-  - if style == 'source' && (_lang = local_attr :language)
-    / NOTE class attribute required for highlight.js and prettify
-    / QUESTION should we add a "highlight" class to pre?
-    pre.source id=(id unless _has_title) : code data-lang=_lang class="language-#{_lang} prettyprint" =content
-  - else
-    / QUESTION should we add a class to pre?
-    pre id=(id unless _has_title) : code =content
+- _content = ''
+- _pre = {}
+- _code = {tag: :code}
+- _pre[:id] = id unless _has_title
+- if style == 'source' && (_lang = local_attr :language)
+  - _pre[:class] = "source"
+  - _code[:'data-lang'] = _lang
+  - _code[:class] = "language-#{_lang} prettyprint"
+- if option? :nested
+  ruby:
+    def nested_code lines
+      nested_array lines do |s, l|
+        if (_l = l.chomp).end_with? "nest++"
+          s.push
+        elsif _l.end_with? "nest--"
+          s.pop
+        else
+          s.pass l
+        end
+      end
+    end
+  - content_for :pre
+    - render_nested nested_code(content.lines) do |k, v, r|
+      - if k==:code
+        *_code =v.join
+      - elsif k==:nest
+        pre.build *_pre
+          - r.call(v)
+- else
+  - content_for :pre
+    *_code =content
+
 - if _has_title
   figure.listing id=id
     figcaption=title
-    - yield_content :pre
+    pre *_pre
+      - yield_content :pre
 - else
-  - yield_content :pre
+  pre *_pre
+    - yield_content :pre

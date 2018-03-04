@@ -219,4 +219,47 @@ module Slim::Helpers
       EOL
     end
   end
+
+  class NestedStack
+    def initialize tree
+      @stack = [tree]
+    end
+    def push
+      nested = []
+      @stack[-1] << nested
+      @stack << nested
+    end
+    def pop
+      @stack.pop
+    end
+    def pass l
+      @stack[-1] << l
+    end
+  end
+
+  def nested_array array, &block
+    tree = []
+    stack = NestedStack.new tree
+    array.each do |entry|
+      block.call stack, entry
+    end
+    tree
+  end
+
+  def render_nested nested, &block
+    result = []
+    code = []
+    recurse = lambda { |n| render_nested(n, &block) }
+    nested.each do |entry|
+      if entry.is_a? String
+        code << entry
+      else
+        result << yield(:code, code) unless code.empty?
+        code = []
+        result << yield(:nest, entry, recurse)
+      end
+    end
+    result << yield(:code, code) unless code.empty?
+    result
+  end
 end
