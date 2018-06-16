@@ -246,20 +246,29 @@ module Slim::Helpers
     tree
   end
 
+  def nested_code lines
+    nested_array lines do |s, l|
+      if (_l = l.chomp).ends_with? "nest++"
+        s.push
+      elsif _l.ends_with? "nest--"
+        s.pop
+      else
+        s.pass l
+      end
+    end
+  end
+
   def render_nested nested, &block
-    result = []
     code = []
-    recurse = lambda { |n| render_nested(n, &block) }
     nested.each do |entry|
       if entry.is_a? String
         code << entry
       else
-        result << yield(:code, code) unless code.empty?
+        yield :code, code unless code.empty?
         code = []
-        result << yield(:nest, entry, recurse)
+        yield :nest, entry
       end
     end
-    result << yield(:code, code) unless code.empty?
-    result
+    yield :code, code unless code.empty?
   end
 end

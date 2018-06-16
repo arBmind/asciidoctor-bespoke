@@ -1,41 +1,26 @@
 - _has_title = title?
-- _content = ''
-- _pre = {}
-- _code = {tag: :code}
-- _pre[:id] = id unless _has_title
+- _pre_attr = {}
+- _code_attr = {}
+- _pre_attr[:id] = id unless _has_title
 - if style == 'source' && (_lang = local_attr :language)
-  - _pre[:class] = "source"
-  - _code[:'data-lang'] = _lang
-  - _code[:class] = "language-#{_lang} prettyprint"
-- if option? :nested
-  ruby:
-    def nested_code lines
-      nested_array lines do |s, l|
-        if (_l = l.chomp).end_with? "nest++"
-          s.push
-        elsif _l.end_with? "nest--"
-          s.pop
-        else
-          s.pass l
-        end
-      end
-    end
-  - content_for :pre
-    - render_nested nested_code(content.lines) do |k, v, r|
-      - if k==:code
-        *_code =v.join
-      - elsif k==:nest
-        pre.build *_pre
-          - r.call(v)
-- else
-  - content_for :pre
-    *_code =content
-
+  - _pre_attr[:class] = "source"
+  - _code_attr[:'data-lang'] = _lang
+  - _code_attr[:class] = "language-#{_lang} prettyprint"
+- content_for :pre
+  pre *_pre_attr
+  - if local_attr? :nested
+    - def recursive k, v
+      - if k == :code
+        code *_code_attr =v.join
+      - else
+        .build =render_nested v, &method(:recursive)
+    - render_nested nested_code content.lines, &method(:recursive)
+  - else
+    code *_code_attr =content
+p =local_attr(:nested, false) ? "Nested\n" : "Normal\n"
 - if _has_title
   figure.listing id=id
     figcaption=title
-    pre *_pre
-      - yield_content :pre
-- else
-  pre *_pre
     - yield_content :pre
+- else
+  - yield_content :pre
