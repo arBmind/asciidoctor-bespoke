@@ -1,7 +1,9 @@
 - _has_title = title?
-- _pre_attr = {}
+- _role = role
+- _pre_attr = {class: []}
 - _code_attr = {}
 - _pre_attr[:id] = id unless _has_title
+- _pre_attr[:class] << _role if role?
 - if style == 'source' && (_lang = local_attr :language)
   - _pre_attr[:class] = "source"
   - _code_attr[:'data-lang'] = _lang
@@ -19,7 +21,7 @@
     code *_code_attr =content
 p =local_attr(:nested, false) ? "Nested\n" : "Normal\n"
 - if _has_title
-  figure.listing id=id
+  figure.listing id=id class=_role
     figcaption=title
     - yield_content :pre
 - else
