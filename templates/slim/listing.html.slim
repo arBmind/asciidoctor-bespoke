@@ -11,7 +11,7 @@
 - content_for :pre
   pre *_pre_attr
   - if local_attr? :nested
-    - def recursive k, v
+    - recursive = lambda do |k, v|
       - if k == :code
         code *_code_attr =v.join
       - else
