@@ -1,25 +1,25 @@
 - _has_title = title?
 - _role = role
 - _pre_attr = {class: []}
-- _code_attr = {}
+- _code = {tag: :code}
 - _pre_attr[:id] = id unless _has_title
 - _pre_attr[:class] << _role if role?
 - if style == 'source' && (_lang = local_attr :language)
   - _pre_attr[:class] = "source"
-  - _code_attr[:'data-lang'] = _lang
-  - _code_attr[:class] = "language-#{_lang} prettyprint"
+  - _code[:'data-lang'] = _lang
+  - _code[:class] = "language-#{_lang} prettyprint"
 - content_for :pre
   pre *_pre_attr
-  - if local_attr? :nested
-    - recursive = lambda do |k, v|
-      - if k == :code
-        code *_code_attr =v.join
-      - else
-        .build =render_nested v, &method(:recursive)
-    - render_nested nested_code content.lines, &method(:recursive)
-  - else
-    code *_code_attr =content
-p =local_attr(:nested, false) ? "Nested\n" : "Normal\n"
+    - if option?(:nested)
+      - recursive = lambda do |k, v|
+        - if k == :code
+          *_code =v.join
+        - else
+          pre.build *_pre_attr
+            - render_nested v, &recursive
+      - render_nested nested_code(content.lines), &recursive
+    - else
+      *_code =content
 - if _has_title
   figure.listing id=id class=_role
     figcaption=title

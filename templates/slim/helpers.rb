@@ -248,9 +248,9 @@ module Slim::Helpers
 
   def nested_code lines
     nested_array lines do |s, l|
-      if (_l = l.chomp).ends_with? "nest++"
+      if (_l = l.chomp).end_with? "nest++"
         s.push
-      elsif _l.ends_with? "nest--"
+      elsif _l.end_with? "nest--"
         s.pop
       else
         s.pass l
